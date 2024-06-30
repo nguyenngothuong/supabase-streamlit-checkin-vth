@@ -4,18 +4,9 @@ import re
 import unidecode
 import streamlit as st
 from datetime import timedelta
-import logging
 import json
 
 
-# Cấu hình logging
-logging.basicConfig(
-    filename='lark_connector.log',  # Tên file log
-    level=logging.INFO,  # Mức độ log (INFO, DEBUG, WARNING, ERROR, CRITICAL)
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Định dạng của thông báo log
-    datefmt='%Y-%m-%d %H:%M:%S',  # Định dạng của ngày giờ
-    encoding='utf-8'  # Định dạng mã hóa cho file log
-)
 
 
 '''
@@ -149,10 +140,10 @@ def refresh_token(app_id, app_secret):
         if new_token:
             return new_token
         else:
-            logging.error("Failed to obtain a new tenant_access_token.")
+            st.error("Failed to obtain a new tenant_access_token.")
             return None
     except Exception as e:
-        logging.error(f"Error occurred while refreshing token: {e}")
+        st.error(f"Error occurred while refreshing token: {e}")
         return None
 
 def create_a_record(tenant_access_token, app_token, table_id, body, app_id=None, app_secret=None):
@@ -174,13 +165,13 @@ def create_a_record(tenant_access_token, app_token, table_id, body, app_id=None,
         
         if response.status_code == 200:
             response_data = response.json()
-            logging.info(f"body response: {response_data}")            
-            logging.info(f"data gửi đi: {payload}")            
+            st.info(f"body response: {response_data}")            
+            st.info(f"data gửi đi: {payload}")            
             record_id = response_data["data"]["record"]["id"]
-            logging.info(f"New record created successfully with ID: {record_id}")
+            st.info(f"New record created successfully with ID: {record_id}")
             return record_id
         elif response.status_code == 400:  # Unauthorized - Token expired
-            logging.info("tenant_access_token has expired. Obtaining a new one...")
+            st.info("tenant_access_token has expired. Obtaining a new one...")
             
             if app_id and app_secret:
                 new_token = refresh_token(app_id, app_secret)
@@ -190,23 +181,23 @@ def create_a_record(tenant_access_token, app_token, table_id, body, app_id=None,
                     if response.status_code == 200:
                         response_data = response.json()
                         record_id = response_data["data"]["record"]["id"]
-                        logging.info(f"New record created successfully with ID: {record_id}")
+                        st.info(f"New record created successfully with ID: {record_id}")
                         return record_id
                     else:
-                        logging.error(f"Error creating record: {response.status_code}, {response.text}")
+                        st.error(f"Error creating record: {response.status_code}, {response.text}")
                         return None
             else:
-                logging.error("app_id and app_secret are required to obtain a new tenant_access_token.")
+                st.error("app_id and app_secret are required to obtain a new tenant_access_token.")
                 return None
         elif response.status_code == 403:
-            logging.error(f"Error code: {response}")
-            logging.info("Please check if you have added the bot to the file...")
+            st.error(f"Error code: {response}")
+            st.info("Please check if you have added the bot to the file...")
             return None
         else:
-            logging.error(f"Error creating record: {response.status_code}, {response.text}")
+            st.error(f"Error creating record: {response.status_code}, {response.text}")
             return None
     except requests.exceptions.RequestException as e:
-        logging.error(f"Error calling API: {e}")
+        st.error(f"Error calling API: {e}")
         return None
 
 def create_records(tenant_access_token, app_token, table_id, records, app_id=None, app_secret=None):
@@ -226,8 +217,8 @@ def create_records(tenant_access_token, app_token, table_id, records, app_id=Non
 
         if response.status_code == 200:
             response_data = response.json()
-            logging.info(f"Dữ liệu gửi đi: {payload}")
-            logging.info(f"Dữ liệu trả về: {response_data}")
+            st.info(f"Dữ liệu gửi đi: {payload}")
+            st.info(f"Dữ liệu trả về: {response_data}")
             record_ids = [record["record_id"] for record in response_data["data"]["records"]]
             st.success(f"Đã tạo thành công {len(record_ids)} bản ghi mới với IDs: {', '.join(record_ids)}")
             return record_ids
@@ -346,9 +337,8 @@ def flatten_dict(data):
                 result[key] = value
     return result
 
-
-
-def get_larkbase_data_v4(tenant_access_token, app_token, table_id, view_id=None, payload=None, app_id=None, app_secret=None):
+def get_larkbase_data_v4(app_token, table_id, view_id=None, payload=None, app_id=None, app_secret=None):
+    tenant_access_token = get_tenant_access_token(app_id, app_secret)
     url = f"https://open.larksuite.com/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records"
     
     params = {"page_size": 500}  # Lấy tối đa 500 bản ghi trong một lần gọi API
@@ -369,46 +359,41 @@ def get_larkbase_data_v4(tenant_access_token, app_token, table_id, view_id=None,
         
         try:
             if payload:
-                response = requests.post(url + "/search", headers=headers, params=params, data=json.dumps(payload))
+                response = requests.post(url + "/search", headers=headers, params=params, json=payload)
             else:
                 response = requests.get(url, headers=headers, params=params)
 
+            response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
             
-            if response.status_code == 200:
-                response_data = response.json()
+            response_data = response.json()
+            
+            if "data" in response_data and "items" in response_data["data"]:
                 items.extend(response_data["data"]["items"])
-
-                if response_data["data"]["has_more"]:
-                    page_token = response_data["data"]["page_token"]
+                if response_data["data"].get("has_more"):
+                    page_token = response_data["data"].get("page_token")
                 else:
                     break
-            elif response.status_code == 400:  # Unauthorized - Token hết hạn
-                logging.info("tenant_access_token has expired. Obtaining a new one...")
-
-                if app_id and app_secret:
-                    new_token = refresh_token(app_id, app_secret)
-                    if new_token:
-                        tenant_access_token = new_token
-                        headers["Authorization"] = f"Bearer {tenant_access_token}"
-                    else:
-                        logging.error("Failed to obtain a new tenant_access_token.")
-                        return None
-                else:
-                    logging.error("app_id and app_secret are required to obtain a new tenant_access_token.")
-                    return None
-            elif response.status_code == 403:
-                logging.error(f"Error code: {response}")
-                logging.info("Please check if you have added the bot to the file...")
-                return None
             else:
-                logging.error(f"Error: {response}")
-                return None
+                st.error(f"Unexpected response structure: {response_data}")
+                break
+
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"HTTP Error: {e.response.status_code}"
+            response_data = e.response.json()
+            if "code" in response_data and "msg" in response_data:
+                error_msg += f" - {response_data['code']}: {response_data['msg']}"
+            st.error(error_msg)
+            if "error" in response_data and "log_id" in response_data["error"]:
+                st.info(f"Log ID: {response_data['error']['log_id']}")
+            break
         except requests.exceptions.RequestException as e:
-            logging.error(f"Error calling API: {e}")
-            return None
+            st.error(f"Error calling API: {e}")
+            break
+        except json.JSONDecodeError:
+            st.error(f"Invalid JSON response: {response.text}")
+            break
 
     return items
-
 
 
 # lark_app_id = "cli_a6e8ff5828b89009"

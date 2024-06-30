@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_navigation_bar import st_navbar
 from auth import check_logged_in
 from pages import login_page, signup_page, help_page
-from main_page import main_page
+from main_page_v2 import main_page
 
 
 

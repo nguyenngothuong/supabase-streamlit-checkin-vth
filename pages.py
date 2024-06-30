@@ -72,7 +72,10 @@ def help_page():
     st.write("- Sau khi chọn khóa học và môn học, danh sách học viên sẽ được hiển thị.")
     st.write("- Mỗi học viên sẽ có thông tin như: STT, Tên học viên, Số điện thoại.")
     st.write("- Đánh dấu vào checkbox 'Điểm danh' để xác nhận sự có mặt của học viên.")
+    st.video("https://youtu.be/nTJnCDq3U0Y")
     
+    
+    st.info("Mới cập nhật 01 07 2024")
     st.header("4. Ghi chú")
     st.write("- Bạn có thể nhập ghi chú vào ô 'Ghi chú' nếu cần thiết.")
     
