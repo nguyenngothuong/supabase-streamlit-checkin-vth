@@ -155,7 +155,6 @@ def main_page():
 
         if st.button("Xác nhận điểm danh", key="gui_thong_tin_di"):
             diem_danh_data = prepare_diem_danh_data(st.session_state.filtered_hoc_vien, note, st.session_state.user)
-            st.write(diem_danh_data)
             send_data_to_webhook(diem_danh_data, webhook_url, http_basic_auth_user, http_basic_auth_password)
 
         st.write("")

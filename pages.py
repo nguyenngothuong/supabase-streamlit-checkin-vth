@@ -73,9 +73,12 @@ def help_page():
     st.write("- Mỗi học viên sẽ có thông tin như: STT, Tên học viên, Số điện thoại.")
     st.write("- Đánh dấu vào checkbox 'Điểm danh' để xác nhận sự có mặt của học viên.")
     st.video("https://youtu.be/nTJnCDq3U0Y")
-    
-    
     st.info("Mới cập nhật 01 07 2024")
+    
+    st.info("Mới cập nhật 06 08 2024")
+    st.video("https://drive.google.com/file/d/1q0iW9vCIbf5s6M_Wf4mJRvw0SCAVJIUs/view?usp=sharing")
+    st.write("Link: https://drive.google.com/file/d/1q0iW9vCIbf5s6M_Wf4mJRvw0SCAVJIUs/view?usp=sharing")
+    
     st.header("4. Ghi chú")
     st.write("- Bạn có thể nhập ghi chú vào ô 'Ghi chú' nếu cần thiết.")
     
