@@ -19,11 +19,15 @@ def save_data_to_json(data, filename):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 def send_data_to_webhook(json_data, webhook_url, user, password):
+    info_placeholder = st.empty()
+    info_placeholder.info("Đang lưu dữ liệu, vui lòng chờ xíu nhen 😉")
     auth = HTTPBasicAuth(user, password)
     response = requests.post(webhook_url, json=json_data, auth=auth)
     if response.status_code == 200:
+        info_placeholder.empty()
         st.success("Dữ liệu đã được gửi thành công đến webhook.")
     else:
+        info_placeholder.empty()
         st.error(f"Gửi dữ liệu đến webhook thất bại. Mã trạng thái: {response.status_code}")
         st.error(f"Nội dung phản hồi: {response.text}")
 
@@ -61,6 +65,8 @@ def filter_hoc_vien(records, selected_khoa_hoc, selected_mon_hoc):
     return [hv for hv in records if hv['fields'].get('ID_KHOA_HOC_TEXT', {}).get('value', [{}])[0].get('text', '') == selected_khoa_hoc 
             and hv['fields'].get('Tên môn học', {}).get('value', [{}])[0].get('text', '') == selected_mon_hoc]
 
+
+# @st.cache_data(experimental_allow_widgets=True)  # 👈 Set the parameter
 def display_hoc_vien(filtered_hoc_vien, selected_khoa_hoc, selected_mon_hoc):
     for i, hv in enumerate(filtered_hoc_vien, start=1):
         st.write(f"STT: {i}")
@@ -100,7 +106,8 @@ def prepare_diem_danh_data(filtered_hoc_vien, note, user):
                 "Mã khóa học": hv['fields'].get('ID_KHOA_HOC_TEXT', {}).get('value', [{}])[0].get('text', ''),
                 "Mã môn học": hv['fields'].get('ma_mon_hoc_text', {}).get('value', [{}])[0].get('text', ''),
                 "Tên môn học": hv['fields'].get('Tên môn học', {}).get('value', [{}])[0].get('text', ''),
-                "Số điện thoại": hv['fields'].get('Số điện thoại', {}).get('value', [''])[0]
+                "Số điện thoại": hv['fields'].get('Số điện thoại', {}).get('value', [''])[0],
+                "Thông tin liên quan": [hv['record_id']]  # Đặt record_id trong một danh sách
             }
         })
     return diem_danh_data
@@ -147,8 +154,8 @@ def main_page():
 
         if st.button("Xác nhận điểm danh", key="gui_thong_tin_di"):
             diem_danh_data = prepare_diem_danh_data(st.session_state.filtered_hoc_vien, note, st.session_state.user)
+            st.write(diem_danh_data)
             send_data_to_webhook(diem_danh_data, webhook_url, http_basic_auth_user, http_basic_auth_password)
-            st.success("Điểm danh thành công và đã gửi dữ liệu đến Larkbase!")
 
         st.write("")
         with st.popover("Đăng xuất"):
