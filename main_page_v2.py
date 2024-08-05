@@ -107,6 +107,7 @@ def prepare_diem_danh_data(filtered_hoc_vien, note, user):
                 "Mã môn học": hv['fields'].get('ma_mon_hoc_text', {}).get('value', [{}])[0].get('text', ''),
                 "Tên môn học": hv['fields'].get('Tên môn học', {}).get('value', [{}])[0].get('text', ''),
                 "Số điện thoại": hv['fields'].get('Số điện thoại', {}).get('value', [''])[0],
+                "Ghi chú": note,
                 "Thông tin liên quan": [hv['record_id']]  # Đặt record_id trong một danh sách
             }
         })

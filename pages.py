@@ -12,31 +12,31 @@ def login_page():
             st.success("Đăng nhập thành công!")
             st.rerun()
 
-# def signup_page():
-#     st.title("Đăng ký")
-#     email = st.text_input("Email", key="signup_email")
-#     password = st.text_input("Mật khẩu", type="password", key="signup_password")
-#     confirm_password = st.text_input("Xác nhận mật khẩu", type="password", key="signup_confirm_password")
+def signup_page():
+    st.title("Đăng ký")
+    email = st.text_input("Email", key="signup_email")
+    password = st.text_input("Mật khẩu", type="password", key="signup_password")
+    confirm_password = st.text_input("Xác nhận mật khẩu", type="password", key="signup_confirm_password")
     
-#     if st.button("Đăng ký"):
-#         if password != confirm_password:
-#             st.error("Mật khẩu và xác nhận mật khẩu không khớp.")
-#         elif len(password) < 8:
-#             st.error("Mật khẩu phải có ít nhất 8 ký tự.")
-#         elif not any(char.islower() for char in password):
-#             st.error("Mật khẩu phải chứa ít nhất một chữ cái thường.")
-#         elif not any(char.isupper() for char in password):
-#             st.error("Mật khẩu phải chứa ít nhất một chữ cái hoa.")
-#         elif not any(char.isdigit() for char in password):
-#             st.error("Mật khẩu phải chứa ít nhất một chữ số.")
-#         elif not any(char in "!@#$%^&*()_+-=[]{};':\"|\<>?,./" for char in password):
-#             st.error("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.")
-#         else:
-#             try:
-#                 if signup(email, password):
-#                     st.success("Đăng ký thành công!")
-#             except Exception as e:
-#                 st.error(f"Đăng ký thất bại: {e}")
+    if st.button("Đăng ký"):
+        if password != confirm_password:
+            st.error("Mật khẩu và xác nhận mật khẩu không khớp.")
+        elif len(password) < 8:
+            st.error("Mật khẩu phải có ít nhất 8 ký tự.")
+        elif not any(char.islower() for char in password):
+            st.error("Mật khẩu phải chứa ít nhất một chữ cái thường.")
+        elif not any(char.isupper() for char in password):
+            st.error("Mật khẩu phải chứa ít nhất một chữ cái hoa.")
+        elif not any(char.isdigit() for char in password):
+            st.error("Mật khẩu phải chứa ít nhất một chữ số.")
+        elif not any(char in r"!@#$%^&*()_+-=[]{};':\"|\<>?,./" for char in password):
+            st.error("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.")
+        else:
+            try:
+                if signup(email, password):
+                    st.success("Đăng ký thành công!")
+            except Exception as e:
+                st.error(f"Đăng ký thất bại: {e}")
 
 
 def main_page():
